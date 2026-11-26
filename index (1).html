@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steel Weight Calculator V6</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #e4e4e4;
+    --accent: #de4435;
+    --accent2: #111111;
+    --text: #111111;
+    --muted: #6b6b6b;
+    --green: #de4435;
+    --input-bg: #f7f7f7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 18px 32px;
+    display: flex; align-items: center; gap: 16px;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 60%);
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 18px; color: #fff;
+  }
+  header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text);
+  }
+  header h1 span { color: var(--accent); }
+  .header-sub { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .header-version {
+    background: var(--border); color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+  }
+
+  /* TABS */
+  .tabs-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; gap: 2px;
+    overflow-x: auto;
+  }
+  .tabs-wrap::-webkit-scrollbar { height: 3px; }
+  .tabs-wrap::-webkit-scrollbar-track { background: var(--surface); }
+  .tabs-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .tab-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 12px 16px;
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s; white-space: nowrap;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-icon { flex-shrink: 0; opacity: 0.7; }
+  .tab-btn.active .tab-icon { opacity: 1; }
+
+  /* MAIN */
+  .main {
+    max-width: 1100px; margin: 32px auto; padding: 0 24px;
+    display: grid; grid-template-columns: 1fr 360px; gap: 24px;
+    align-items: start;
+  }
+
+  /* CALCULATOR CARD */
+  .calc-panel { display: none; }
+  .calc-panel.active { display: block; }
+
+  .calc-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  .calc-header {
+    background: linear-gradient(135deg, #ffffff 0%, #fff5f3 100%);
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .calc-badge {
+    background: var(--accent);
+    color: #fff; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 11px; letter-spacing: 1px;
+    padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .calc-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px; font-weight: 700; letter-spacing: 1px;
+  }
+  .sec-diag-wrap {
+    margin-left: auto; flex-shrink: 0;
+    opacity: 0.35;
+    transition: opacity 0.2s;
+  }
+  .calc-card:hover .sec-diag-wrap { opacity: 0.6; }
+  .sec-diag { color: var(--accent); display: block; }
+  .calc-body { padding: 24px; }
+
+  .field-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field input, .field select {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px; font-weight: 500;
+    padding: 10px 14px;
+    outline: none; transition: border-color 0.2s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--card); }
+
+  .formula-hint {
+    margin: 16px 0 0;
+    background: var(--input-bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12px; color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+  }
+
+  /* RESULT */
+  .result-display {
+    margin-top: 20px;
+    background: linear-gradient(135deg, #fff5f3 0%, #ffe9e6 100%);
+    border: 1px solid #f3b8b0; border-radius: 10px;
+    padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .result-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--green); opacity: 0.7;
+    margin-bottom: 4px;
+  }
+  .result-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 40px; font-weight: 800; color: var(--green);
+    line-height: 1; transition: opacity 0.15s;
+  }
+  .result-unit {
+    font-size: 16px; font-weight: 400; opacity: 0.6; margin-left: 4px;
+  }
+  .copy-btn {
+    background: rgba(222,68,53,0.1);
+    border: 1px solid rgba(222,68,53,0.2);
+    border-radius: 8px; color: var(--green);
+    cursor: pointer; padding: 8px 10px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+    opacity: 0.5;
+  }
+  .copy-btn:hover { opacity: 1; background: rgba(222,68,53,0.2); border-color: var(--green); }
+  .copy-btn.copied {
+    background: rgba(222,68,53,0.25); border-color: var(--green);
+    opacity: 1; color: var(--accent);
+  }
+
+  .add-btn {
+    flex: 1;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 12px; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .add-btn:hover { opacity: 0.85; }
+
+  /* BOM PANEL */
+  .bom-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    position: sticky; top: 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  .bom-header {
+    background: var(--surface);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .bom-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+  .bom-count {
+    background: var(--accent2); color: #fff;
+    border-radius: 20px; padding: 2px 10px;
+    font-size: 12px; font-weight: 700;
+  }
+  .bom-list { max-height: 400px; overflow-y: auto; }
+  .bom-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .bom-item:last-child { border-bottom: none; }
+  .bom-item-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .bom-item-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .bom-item-qty {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px; font-weight: 800; color: var(--green);
+    white-space: nowrap; margin-left: 12px;
+  }
+  .bom-item-remove {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 16px; padding: 0 0 0 8px; line-height: 1;
+  }
+  .bom-item-remove:hover { color: var(--accent2); }
+  .bom-empty { padding: 32px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+  .bom-total {
+    padding: 16px 20px;
+    background: var(--surface);
+    border-top: 2px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .bom-total-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .bom-total-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px; font-weight: 800; color: var(--accent);
+  }
+  .bom-actions { padding: 12px 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .bom-btn {
+    flex: 1; border: none; border-radius: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 9px 10px; cursor: pointer;
+    white-space: nowrap; min-width: 60px;
+  }
+  .bom-btn.clear { background: var(--input-bg); color: var(--muted); }
+  .bom-btn.clear:hover { color: var(--accent2); }
+  .bom-btn.export { background: var(--accent); color: #fff; }
+  .bom-btn.export:hover { opacity: 0.85; }
+  .bom-btn.print { background: #111; color: #fff; border: 1px solid #111; }
+  .bom-btn.print:hover { background: #333; color: #fff; }
+
+  /* weight/mtr info display */
+  .wt-info {
+    margin-top: 12px;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--input-bg); border-radius: 6px; padding: 8px 14px;
+    border: 1px solid var(--border);
+  }
+  .wt-info-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .wt-info-value { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .wt-info-unit { font-size: 12px; color: var(--muted); }
+
+  /* BUTTON ROW */
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+  .clear-btn {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 12px 18px; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .clear-btn:hover { color: var(--accent2); border-color: var(--accent2); }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed; top: 20px; right: 20px;
+    z-index: 9999;
+    display: flex; flex-direction: column; gap: 10px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    transform: translateX(120%);
+    transition: transform 0.35s cubic-bezier(.22,1,.36,1);
+    pointer-events: auto; min-width: 220px; max-width: 320px;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.success { border-left: 4px solid var(--green); }
+  .toast.error   { border-left: 4px solid var(--accent2); }
+  .toast.info    { border-left: 4px solid var(--accent); }
+  .toast-icon { font-size: 18px; flex-shrink: 0; }
+  .toast-msg { flex: 1; }
+
+  /* BOM MOBILE TOGGLE */
+  .bom-fab {
+    display: none;
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 50px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px; font-weight: 800; letter-spacing: 1px;
+    padding: 14px 20px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(222,68,53,0.35);
+    z-index: 100;
+  }
+  .bom-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 200;
+  }
+  .bom-drawer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--card);
+    border-radius: 16px 16px 0 0;
+    border-top: 2px solid var(--accent);
+    max-height: 85vh; overflow-y: auto;
+    z-index: 201;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  .bom-drawer.open { transform: translateY(0); }
+  .bom-drawer-handle {
+    width: 40px; height: 4px;
+    background: var(--border); border-radius: 2px;
+    margin: 12px auto 0;
+  }
+
+  /* MOBILE BREAKPOINT */
+  @media (max-width: 768px) {
+    header { padding: 12px 16px; gap: 10px; }
+    header h1 { font-size: 20px; }
+    .header-sub, .header-version { display: none; }
+    .logo-icon { width: 32px; height: 32px; font-size: 14px; }
+    .tabs-wrap { padding: 0 8px; }
+    .tab-btn { padding: 10px 10px; font-size: 12px; gap: 5px; }
+    .tab-icon { display: none; }
+    .main { grid-template-columns: 1fr; margin: 16px auto; padding: 0 12px; gap: 0; }
+    .main > .bom-panel { display: none; }
+    .calc-body { padding: 16px; }
+    .calc-header { padding: 14px 16px; flex-wrap: wrap; gap: 8px; }
+    .calc-title { font-size: 17px; }
+    .sec-diag-wrap { display: none; }
+    .field-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .result-value { font-size: 32px; }
+    .bom-fab { display: flex; align-items: center; gap: 8px; }
+    .bom-overlay.open { display: block; }
+    .bom-drawer { display: block; }
+    .pipe-mode-wrap { margin-left: 0 !important; margin-top: 6px; width: 100%; }
+    .toast-container { top: 10px; right: 10px; left: 10px; }
+    .toast { min-width: unset; }
+  }
+  @media (max-width: 400px) {
+    .field-grid { grid-template-columns: 1fr; }
+  }
+
+  /* PRINT STYLES */
+  @media print {
+    body * { visibility: hidden; }
+    #print-area, #print-area * { visibility: visible; }
+    #print-area { position: fixed; top: 0; left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<header>
+  <div class="logo-icon">S</div>
+  <h1>Steel <span>Weight</span> Calculator</h1>
+  <span class="header-version">V6</span>
+  <div class="header-sub">All weights in Metric Tons (MT)</div>
+</header>
+
+<div class="tabs-wrap" id="tabsWrap">
+  <button class="tab-btn active" onclick="switchTab('plates', this)">
+    <svg class="tab-icon" viewBox="0 0 22 16" width="22" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><rect x="1" y="4" width="20" height="8" rx="0.5"/></svg>
+    MS Plates
+  </button>
+  <button class="tab-btn" onclick="switchTab('channels', this)">
+    <svg class="tab-icon" viewBox="0 0 18 20" width="16" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"><path d="M16 2H3V18H16"/></svg>
+    MS Channels
+  </button>
+  <button class="tab-btn" onclick="switchTab('beams', this)">
+    <svg class="tab-icon" viewBox="0 0 22 20" width="22" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"><line x1="2" y1="3" x2="20" y2="3"/><line x1="11" y1="3" x2="11" y2="17"/><line x1="2" y1="17" x2="20" y2="17"/></svg>
+    RS Joists / Beams
+  </button>
+  <button class="tab-btn" onclick="switchTab('purlin', this)">
+    <svg class="tab-icon" viewBox="0 0 22 20" width="22" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"><polyline points="2,4 11,4 11,10 13,10 13,16 20,16"/></svg>
+    Purlin
+  </button>
+  <button class="tab-btn" onclick="switchTab('roofing', this)">
+    <svg class="tab-icon" viewBox="0 0 22 20" width="22" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1,16 5,6 9,16 13,6 17,16 21,6"/></svg>
+    Roofing
+  </button>
+  <button class="tab-btn" onclick="switchTab('angles', this)">
+    <svg class="tab-icon" viewBox="0 0 18 20" width="16" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><polyline points="3,2 3,18 17,18"/></svg>
+    MS Equal Angles
+  </button>
+  <button class="tab-btn" onclick="switchTab('flats', this)">
+    <svg class="tab-icon" viewBox="0 0 22 16" width="22" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><rect x="1" y="5" width="20" height="6"/></svg>
+    MS Flats
+  </button>
+  <button class="tab-btn" onclick="switchTab('decking', this)">
+    <svg class="tab-icon" viewBox="0 0 24 18" width="24" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="1,14 5,6 9,14 13,6 17,14 21,6 23,6"/></svg>
+    Decking Sheet
+  </button>
+  <button class="tab-btn" onclick="switchTab('pipes', this)">
+    <svg class="tab-icon" viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><circle cx="11" cy="11" r="5"/></svg>
+    Hollow Sections
+  </button>
+</div>
+
+<div class="main">
+  <div>
+
+    <!-- MS PLATES -->
+    <div class="calc-panel active" id="panel-plates">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 1</span>
+          <span class="calc-title">MS Plates / Sheets</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square">
+              <rect x="6" y="16" width="60" height="20" rx="1"/>
+              <line x1="6" y1="13" x2="6" y2="10"/><line x1="66" y1="13" x2="66" y2="10"/>
+              <line x1="6" y1="10" x2="26" y2="10"/><line x1="46" y1="10" x2="66" y2="10"/>
+              <line x1="6" y1="39" x2="6" y2="42"/><line x1="66" y1="39" x2="66" y2="42"/>
+              <line x1="6" y1="42" x2="24" y2="42"/><line x1="48" y1="42" x2="66" y2="42"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field"><label>Thickness (mm)</label><input type="number" id="pl-thk" placeholder="e.g. 12" oninput="calcPlates()"></div>
+            <div class="field"><label>Width (mm)</label><input type="number" id="pl-wid" placeholder="e.g. 2500" oninput="calcPlates()"></div>
+            <div class="field"><label>Length (mm)</label><input type="number" id="pl-len" placeholder="e.g. 6000" oninput="calcPlates()"></div>
+            <div class="field"><label>Nos</label><input type="number" id="pl-nos" placeholder="e.g. 2" oninput="calcPlates()"></div>
+          </div>
+          <div class="formula-hint">Formula: THK × WIDTH × LENGTH × NOS × 7.85 ÷ 1,000,000,000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="pl-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('pl-result')" title="Copy value">
+              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg>
+            </button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('plates')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('plates')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MS CHANNELS -->
+    <div class="calc-panel" id="panel-channels">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 2</span>
+          <span class="calc-title">MS Channels (ISMC)</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="square">
+              <path d="M54,8 L22,8 L22,44 L54,44"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>Size (mm)</label>
+              <select id="ch-size" onchange="updateChannelWt(); calcChannels()">
+                <option value="">Select Size</option>
+                <option value="75x40">75 × 40</option>
+                <option value="100x50">100 × 50</option>
+                <option value="125x65">125 × 65</option>
+                <option value="150x75">150 × 75</option>
+                <option value="175x75">175 × 75</option>
+                <option value="200x75a">200 × 75 (22.3)</option>
+                <option value="200x75b">200 × 75 (24.2)</option>
+                <option value="250x82">250 × 82</option>
+                <option value="300x90">300 × 90</option>
+                <option value="400x100">400 × 100</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Length (mtr)</label>
+              <select id="ch-len" onchange="calcChannels()">
+                <option value="">Select</option>
+                <option value="6">6 Mtr</option>
+                <option value="12">12 Mtr</option>
+              </select>
+            </div>
+            <div class="field"><label>Nos</label><input type="number" id="ch-nos" placeholder="e.g. 10" oninput="calcChannels()"></div>
+          </div>
+          <div class="wt-info" id="ch-wt-info" style="display:none"><span class="wt-info-label">Wt/Mtr</span><span class="wt-info-value" id="ch-wt-val">—</span><span class="wt-info-unit">kg/mtr</span></div>
+          <div class="formula-hint">Formula: Wt/Mtr × Length × Nos ÷ 1000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="ch-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('ch-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('channels')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('channels')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEAMS -->
+    <div class="calc-panel" id="panel-beams">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 3</span>
+          <span class="calc-title">RS Joists / Beams (ISMB)</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="square">
+              <line x1="14" y1="10" x2="58" y2="10"/>
+              <line x1="36" y1="10" x2="36" y2="42"/>
+              <line x1="14" y1="42" x2="58" y2="42"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>Size (mm)</label>
+              <select id="bm-size" onchange="updateBeamWt(); calcBeams()">
+                <option value="">Select Size</option>
+                <option value="100x50">100 × 50</option>
+                <option value="125x70">125 × 70</option>
+                <option value="150x75">150 × 75</option>
+                <option value="200x100">200 × 100</option>
+                <option value="225x110">225 × 110</option>
+                <option value="250x125">250 × 125</option>
+                <option value="300x140">300 × 140</option>
+                <option value="350x140">350 × 140</option>
+                <option value="400x140">400 × 140</option>
+                <option value="450x150">450 × 150</option>
+                <option value="500x180">500 × 180</option>
+                <option value="600x210">600 × 210</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Length (mtr)</label>
+              <select id="bm-len" onchange="calcBeams()">
+                <option value="">Select</option>
+                <option value="6">6 Mtr</option>
+                <option value="12">12 Mtr</option>
+              </select>
+            </div>
+            <div class="field"><label>Nos</label><input type="number" id="bm-nos" placeholder="e.g. 5" oninput="calcBeams()"></div>
+          </div>
+          <div class="wt-info" id="bm-wt-info" style="display:none"><span class="wt-info-label">Wt/Mtr</span><span class="wt-info-value" id="bm-wt-val">—</span><span class="wt-info-unit">kg/mtr</span></div>
+          <div class="formula-hint">Formula: Wt/Mtr × Length × Nos ÷ 1000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="bm-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('bm-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('beams')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('beams')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PURLIN -->
+    <div class="calc-panel" id="panel-purlin">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 4</span>
+          <span class="calc-title">Purlin (2mm × 200 × 60 × 60 × 20)</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="square">
+              <polyline points="16,10 40,10 40,26 32,26 32,42 56,42"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field"><label>Length (mtr)</label><input type="number" id="pu-len" placeholder="e.g. 6" oninput="calcPurlin()"></div>
+            <div class="field"><label>Nos</label><input type="number" id="pu-nos" placeholder="e.g. 20" oninput="calcPurlin()"></div>
+          </div>
+          <div class="formula-hint">Formula: Length × 5.5 × Nos ÷ 1000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="pu-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('pu-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('purlin')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('purlin')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROOFING -->
+    <div class="calc-panel" id="panel-roofing">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 5</span>
+          <span class="calc-title">Roofing Sheet</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4,38 14,18 24,38 34,18 44,38 54,18 64,18"/>
+              <line x1="4" y1="38" x2="4" y2="44"/><line x1="64" y1="18" x2="64" y2="12"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>Type</label>
+              <select id="rf-type" onchange="calcRoofing()">
+                <option value="">Select Type</option>
+                <option value="cc">Colour Coated (CC) — 4.5 kg/mtr</option>
+                <option value="bgl">BGL Roof Sheet — 4.35 kg/mtr</option>
+              </select>
+            </div>
+            <div class="field"><label>Length (mtr)</label><input type="number" id="rf-len" placeholder="e.g. 6" oninput="calcRoofing()"></div>
+            <div class="field"><label>Nos</label><input type="number" id="rf-nos" placeholder="e.g. 30" oninput="calcRoofing()"></div>
+          </div>
+          <div class="formula-hint">CC: 4.5 × Length × Nos ÷ 1000 &nbsp;|&nbsp; BGL: 4.35 × Length × Nos ÷ 1000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="rf-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('rf-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('roofing')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('roofing')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MS EQUAL ANGLES -->
+    <div class="calc-panel" id="panel-angles">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 6</span>
+          <span class="calc-title">MS Equal Angles (ISA)</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square">
+              <polyline points="20,8 20,44 56,44"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>Size (mm)</label>
+              <select id="ag-size" onchange="updateAngleTHK(); calcAngles()"><option value="">Select Size</option></select>
+            </div>
+            <div class="field">
+              <label>Thickness (mm)</label>
+              <select id="ag-thk" onchange="updateAngleWt(); calcAngles()"><option value="">Select THK</option></select>
+            </div>
+            <div class="field">
+              <label>Length (mtr)</label>
+              <select id="ag-len" onchange="calcAngles()"><option value="">Select</option><option value="6">6 Mtr</option><option value="12">12 Mtr</option></select>
+            </div>
+            <div class="field"><label>Nos</label><input type="number" id="ag-nos" placeholder="e.g. 10" oninput="calcAngles()"></div>
+          </div>
+          <div class="wt-info" id="ag-wt-info" style="display:none"><span class="wt-info-label">Wt/Mtr</span><span class="wt-info-value" id="ag-wt-val">—</span><span class="wt-info-unit">kg/mtr</span></div>
+          <div class="formula-hint">Formula: Wt/Mtr × Length × Nos ÷ 1000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="ag-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('ag-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('angles')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('angles')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MS FLATS -->
+    <div class="calc-panel" id="panel-flats">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 7</span>
+          <span class="calc-title">MS Flats (ISF)</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square">
+              <rect x="8" y="20" width="56" height="12" rx="0.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>Size (mm)</label>
+              <select id="fl-size" onchange="updateFlatTHK(); calcFlats()"><option value="">Select Size</option></select>
+            </div>
+            <div class="field">
+              <label>Thickness (mm)</label>
+              <select id="fl-thk" onchange="updateFlatWt(); calcFlats()"><option value="">Select THK</option></select>
+            </div>
+            <div class="field">
+              <label>Length (mtr)</label>
+              <select id="fl-len" onchange="calcFlats()"><option value="">Select</option><option value="6">6 Mtr</option><option value="12">12 Mtr</option></select>
+            </div>
+            <div class="field"><label>Nos</label><input type="number" id="fl-nos" placeholder="e.g. 10" oninput="calcFlats()"></div>
+          </div>
+          <div class="wt-info" id="fl-wt-info" style="display:none"><span class="wt-info-label">Wt/Mtr</span><span class="wt-info-value" id="fl-wt-val">—</span><span class="wt-info-unit">kg/mtr</span></div>
+          <div class="formula-hint">Formula: Wt/Mtr × Length × Nos ÷ 1000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="fl-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('fl-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('flats')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('flats')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECKING SHEET -->
+    <div class="calc-panel" id="panel-decking">
+      <div class="calc-card">
+        <div class="calc-header">
+          <span class="calc-badge">Section 8</span>
+          <span class="calc-title">Decking Sheet (Width 960mm)</span>
+          <div class="sec-diag-wrap">
+            <svg class="sec-diag" viewBox="0 0 72 52" width="72" height="52" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
+              <polyline points="4,40 12,24 20,24 26,40 34,40 42,24 50,24 56,40 64,40"/>
+              <line x1="4" y1="40" x2="64" y2="40" stroke-width="2" opacity="0.3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>Thickness (mm)</label>
+              <select id="dk-thk" onchange="calcDecking()">
+                <option value="">Select THK</option>
+                <option value="0.8">0.8 mm (7.5 kg/mtr)</option>
+                <option value="0.9">0.9 mm (8.5 kg/mtr)</option>
+                <option value="1.0">1.0 mm (9.5 kg/mtr)</option>
+                <option value="1.2">1.2 mm (11.5 kg/mtr)</option>
+              </select>
+            </div>
+            <div class="field"><label>Length (mtr)</label><input type="number" id="dk-len" placeholder="e.g. 6" oninput="calcDecking()"></div>
+            <div class="field"><label>Nos</label><input type="number" id="dk-nos" placeholder="e.g. 25" oninput="calcDecking()"></div>
+          </div>
+          <div class="formula-hint">0.8→7.5 | 0.9→8.5 | 1.0→9.5 | 1.2→11.5 × Length × Nos ÷ 1000</div>
+          <div class="result-display">
+            <div><div class="result-label">Weight</div><div class="result-value" id="dk-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('dk-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('decking')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('decking')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOLLOW STRUCTURAL SECTIONS -->
+    <div class="calc-panel" id="panel-pipes">
+      <div class="calc-card">
+        <div class="calc-header" style="flex-wrap:wrap;gap:10px">
+          <span class="calc-badge">Section 9</span>
+          <span class="calc-title">Hollow Structural Sections</span>
+          <div id="pipes-diag-wrap" class="sec-diag-wrap" style="margin-left:auto">
+            <svg id="pipes-diag" class="sec-diag" viewBox="0 0 52 52" width="52" height="52" fill="none" stroke="currentColor" stroke-width="2.8">
+              <circle cx="26" cy="26" r="18"/><circle cx="26" cy="26" r="11"/>
+            </svg>
+          </div>
+          <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden" class="pipe-mode-wrap">
+            <button id="hs-chs" onclick="setHSType('chs')" style="padding:6px 16px;background:var(--accent);color: #fff;border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;cursor:pointer">CHS</button>
+            <button id="hs-shs" onclick="setHSType('shs')" style="padding:6px 16px;background:transparent;color:var(--muted);border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;cursor:pointer">SHS</button>
+            <button id="hs-rhs" onclick="setHSType('rhs')" style="padding:6px 16px;background:transparent;color:var(--muted);border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;cursor:pointer">RHS</button>
+          </div>
+        </div>
+        <div class="calc-body">
+          <!-- CHS -->
+          <div id="hs-chs-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+              <span style="font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase">Circular Hollow Section</span>
+              <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden">
+                <button id="pi-mode-nb" onclick="setPipeMode('nb')" style="padding:5px 12px;background:var(--accent);color: #fff;border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer">BY NB</button>
+                <button id="pi-mode-od" onclick="setPipeMode('od')" style="padding:5px 12px;background:transparent;color:var(--muted);border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer">BY OD</button>
+              </div>
+            </div>
+            <div id="pi-nb-row" class="field-grid" style="margin-bottom:16px">
+              <div class="field">
+                <label>Nominal Bore (NB)</label>
+                <select id="pi-nb" onchange="applyNB(); calcPipes()">
+                  <option value="">Select NB</option>
+                  <option value="15">NB 15 (OD 21.3mm)</option>
+                  <option value="20">NB 20 (OD 26.9mm)</option>
+                  <option value="25">NB 25 (OD 33.7mm)</option>
+                  <option value="32">NB 32 (OD 42.4mm)</option>
+                  <option value="40">NB 40 (OD 48.3mm)</option>
+                  <option value="50">NB 50 (OD 60.3mm)</option>
+                  <option value="65">NB 65 (OD 76.1mm)</option>
+                  <option value="80">NB 80 (OD 88.9mm)</option>
+                  <option value="100">NB 100 (OD 114.3mm)</option>
+                  <option value="125">NB 125 (OD 139.7mm)</option>
+                  <option value="150">NB 150 (OD 168.3mm)</option>
+                  <option value="200">NB 200 (OD 219.1mm)</option>
+                  <option value="250">NB 250 (OD 273mm)</option>
+                  <option value="300">NB 300 (OD 323.9mm)</option>
+                  <option value="350">NB 350 (OD 355.6mm)</option>
+                  <option value="400">NB 400 (OD 406.4mm)</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-grid">
+              <div class="field"><label>Outer Diameter (mm)</label><input type="number" id="pi-od" placeholder="e.g. 48.3" oninput="calcPipes()" readonly style="opacity:0.5;cursor:not-allowed"></div>
+              <div class="field"><label>Wall Thickness (mm)</label><input type="number" id="pi-wt" placeholder="e.g. 3.2" oninput="calcPipes()"></div>
+              <div class="field"><label>Length (mtr)</label><input type="number" id="pi-len" placeholder="e.g. 6" oninput="calcPipes()"></div>
+              <div class="field"><label>Nos</label><input type="number" id="pi-nos" placeholder="e.g. 10" oninput="calcPipes()"></div>
+            </div>
+            <div class="wt-info" id="pi-wt-info" style="display:none"><span class="wt-info-label">Wt/Mtr</span><span class="wt-info-value" id="pi-wt-val">—</span><span class="wt-info-unit">kg/mtr</span></div>
+            <div class="formula-hint">Wt/Mtr = (OD − WT) × WT × 0.02466 &nbsp;|&nbsp; Total = Wt/Mtr × L × Nos ÷ 1000</div>
+          </div>
+          <!-- SHS -->
+          <div id="hs-shs-section" style="display:none">
+            <div style="margin-bottom:12px"><span style="font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase">Square Hollow Section</span></div>
+            <div class="field-grid">
+              <div class="field"><label>Side (mm)</label><input type="number" id="shs-side" placeholder="e.g. 50" oninput="calcSHS()"></div>
+              <div class="field"><label>Wall Thickness (mm)</label><input type="number" id="shs-thk" placeholder="e.g. 3" oninput="calcSHS()"></div>
+              <div class="field"><label>Length (mtr)</label><input type="number" id="shs-len" placeholder="e.g. 6" oninput="calcSHS()"></div>
+              <div class="field"><label>Nos</label><input type="number" id="shs-nos" placeholder="e.g. 10" oninput="calcSHS()"></div>
+            </div>
+            <div class="wt-info" id="shs-wt-info" style="display:none"><span class="wt-info-label">Wt/Mtr</span><span class="wt-info-value" id="shs-wt-val">—</span><span class="wt-info-unit">kg/mtr</span></div>
+            <div class="formula-hint">Wt/Mtr = 4 × THK × (Side − THK) × 7.85 ÷ 1000 &nbsp;|&nbsp; Total = Wt/Mtr × L × Nos ÷ 1000</div>
+          </div>
+          <!-- RHS -->
+          <div id="hs-rhs-section" style="display:none">
+            <div style="margin-bottom:12px"><span style="font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase">Rectangular Hollow Section</span></div>
+            <div class="field-grid">
+              <div class="field"><label>Width (mm)</label><input type="number" id="rhs-wid" placeholder="e.g. 100" oninput="calcRHS()"></div>
+              <div class="field"><label>Height (mm)</label><input type="number" id="rhs-hgt" placeholder="e.g. 50" oninput="calcRHS()"></div>
+              <div class="field"><label>Wall Thickness (mm)</label><input type="number" id="rhs-thk" placeholder="e.g. 3" oninput="calcRHS()"></div>
+              <div class="field"><label>Length (mtr)</label><input type="number" id="rhs-len" placeholder="e.g. 6" oninput="calcRHS()"></div>
+              <div class="field"><label>Nos</label><input type="number" id="rhs-nos" placeholder="e.g. 10" oninput="calcRHS()"></div>
+            </div>
+            <div class="wt-info" id="rhs-wt-info" style="display:none"><span class="wt-info-label">Wt/Mtr</span><span class="wt-info-value" id="rhs-wt-val">—</span><span class="wt-info-unit">kg/mtr</span></div>
+            <div class="formula-hint">Wt/Mtr = 2 × THK × (Width + Height − 2×THK) × 7.85 ÷ 1000 &nbsp;|&nbsp; Total = Wt/Mtr × L × Nos ÷ 1000</div>
+          </div>
+          <!-- Shared Result -->
+          <div class="result-display" style="margin-top:24px">
+            <div><div class="result-label">Weight</div><div class="result-value" id="pi-result">—<span class="result-unit">MT</span></div></div>
+            <button class="copy-btn" onclick="copyResult('pi-result')" title="Copy value"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="11" rx="1.5"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 3 5v9A1.5 1.5 0 0 0 4.5 15.5H7"/></svg></button>
+          </div>
+          <div class="btn-row"><button class="add-btn" onclick="addToBOM('pipes')">+ Add to BOM</button><button class="clear-btn" onclick="clearSection('pipes')">✕ Clear</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOM PANEL -->
+  <div class="bom-panel">
+    <div class="bom-header">
+      <span class="bom-title">Bill of Materials</span>
+      <span class="bom-count" id="bom-count">0</span>
+    </div>
+    <div class="bom-list" id="bom-list">
+      <div class="bom-empty">No items added yet.<br>Calculate and add items above.</div>
+    </div>
+    <div class="bom-total">
+      <span class="bom-total-label">Grand Total</span>
+      <span class="bom-total-value" id="bom-grand">0.000 MT</span>
+    </div>
+    <div class="bom-actions">
+      <button class="bom-btn clear" onclick="clearBOM()">Clear All</button>
+      <button class="bom-btn print" onclick="printBOM()">🖨 Print</button>
+      <button class="bom-btn export" onclick="exportBOM()">Export CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOM FAB -->
+<button class="bom-fab" onclick="openBOMDrawer()">
+  📋 BOM <span id="fab-count" style="background:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">0</span>
+</button>
+
+<!-- MOBILE BOM DRAWER -->
+<div class="bom-overlay" id="bom-overlay" onclick="closeBOMDrawer()"></div>
+<div class="bom-drawer" id="bom-drawer">
+  <div class="bom-drawer-handle"></div>
+  <div class="bom-header" style="margin-top:8px">
+    <span class="bom-title">Bill of Materials</span>
+    <span class="bom-count" id="bom-count-drawer">0</span>
+    <button onclick="closeBOMDrawer()" style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+  </div>
+  <div class="bom-list" id="bom-list-drawer"><div class="bom-empty">No items yet.</div></div>
+  <div class="bom-total">
+    <span class="bom-total-label">Grand Total</span>
+    <span class="bom-total-value" id="bom-grand-drawer">0.000 MT</span>
+  </div>
+  <div class="bom-actions">
+    <button class="bom-btn clear" onclick="clearBOM()">Clear All</button>
+    <button class="bom-btn print" onclick="printBOM()">🖨 Print</button>
+    <button class="bom-btn export" onclick="exportBOM()">CSV</button>
+  </div>
+</div>
+
+<script>
+// ============ DATA TABLES ============
+const CHANNELS = {'75x40':7.14,'100x50':9.56,'125x65':13.1,'150x75':16.8,'175x75':19.6,'200x75a':22.3,'200x75b':24.2,'250x82':34.2,'300x90':36.3,'400x100':50.1};
+const BEAMS    = {'100x50':8.34,'125x70':13.2,'150x75':15,'200x100':25.4,'225x110':31.3,'250x125':37.3,'300x140':46.1,'350x140':52.4,'400x140':61.05,'450x150':72.4,'500x180':86.9,'600x210':123};
+const ANGLES   = {'20x20':{3:0.9,4:1.1},'25x25':{3:1.1,4:1.4,5:1.8,6:2.2},'30x30':{3:1.4,4:1.8,5:2.2,6:2.8},'35x35':{3:1.6,4:2.1,5:2.6,6:3},'40x40':{3:1.8,4:2.4,5:3,6:3.5},'45x45':{3:2.1,4:2.7,5:3.4,6:4},'50x50':{3:2.3,4:3,5:3.8,6:4.5},'65x65':{5:4.9,6:5.8,8:7.7,10:9.4},'75x75':{5:5.7,6:6.8,8:8.9,10:11},'80x80':{6:7.3,8:9.6,10:11.8,12:14},'90x90':{6:8.2,8:10.8,10:13.4,12:15.8},'100x100':{6:9.2,8:12.1,10:14.9,12:17.7},'110x110':{8:13.4,10:16.5,12:19.6,16:24.2},'130x130':{8:15.9,10:19.7,12:23.4,16:28.9},'150x150':{10:22.8,12:27.2,16:35.8,18:39.9,20:44.1},'200x200':{12:36.6,16:48.5,18:54,20:60,25:73.6}};
+const FLATS    = {16:{5:0.6,6:0.8,8:1,10:1.3,12:1.5,16:2,18:2.3,20:2.5,22:2.8,25:3.1},20:{3:0.47,5:0.8,6:0.9,8:1.3,10:1.6,12:1.9,16:2.5,18:2.8,20:3.1,22:3.5,25:3.9},25:{3:0.6,5:1,6:1.2,8:1.6,10:2,12:2.4,16:3.1,18:3.5,20:3.9,22:4.3,25:4.9},32:{3:0.8,5:1.3,6:1.5,8:2,10:2.4,12:3,16:4,18:4.5,20:5,22:5.5,25:6.3},35:{6:1.6,10:2.8},40:{3:0.9,5:1.6,6:1.9,8:2.5,10:3.1,12:3.8,16:5,18:5.7,20:6.3,22:6.9,25:7.8},45:{6:2.1,10:3.5,12:4.2},50:{3:1.2,5:2,6:2.4,8:3.1,10:3.9,12:4.7,16:6.3,18:7.1,20:7.8,22:8.6,25:9.8},63:{5:2.5,6:3,8:4,10:4.9,12:5.9,16:7.9,18:8.9,20:9.9,22:10.9,25:12.4},65:{6:4.1,8:5.1,10:6.1,20:10.2},75:{6:3.5,8:4.7,10:5.9,12:7.1,16:9.4,18:10.6,20:11.8,22:12.9,25:14.7},80:{5:3.1,6:3.8,8:5,10:5.9,12:7.1,16:9.4,18:10.6,20:11.8,22:12.9,25:14.7},100:{5:3.9,6:4.7,8:6.3,10:7.8,12:9.4,16:12.6,18:14,20:15.7,22:17.5,25:19.6},125:{5:4.9,6:5.9,8:7.8,10:9.8,12:11.8,16:15.7,18:17.7,20:19.6,22:21.6,25:25.5},150:{10:11.8,12:14.1,18:18.8,20:23.1,25:29.4},160:{6:6.3,8:7.5,10:12.6,12:15.1,16:20.1,18:22.6,20:25.1,22:27.6,25:31.4},180:{10:17,12:22.6,16:25.4,18:28.3},200:{5:7.8,6:9.4,8:12.6,10:15.7,12:18.8,16:25.1,18:28.3,20:31.4,22:34.5,25:39.2},250:{5:9.8,6:11.3,8:15.7,10:19.6,12:23.6,16:31.4,18:35.3,20:39.2,22:43.2,25:49.1}};
+const DECKING  = {0.8:7.5,0.9:8.5,1.0:9.5,1.2:11.5};
+const NB_OD    = {15:21.3,20:26.9,25:33.7,32:42.4,40:48.3,50:60.3,65:76.1,80:88.9,100:114.3,125:139.7,150:168.3,200:219.1,250:273,300:323.9,350:355.6,400:406.4};
+
+// ============ TOAST ============
+function showToast(msg, type = 'info') {
+  const icons = { success: '✓', error: '✕', info: '◈' };
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]||'◈'}</span><span class="toast-msg">${msg}</span>`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); });
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 2800);
+}
+
+// ============ COPY RESULT ============
+function copyResult(id) {
+  const el = document.getElementById(id);
+  const txt = el.textContent.replace('MT','').trim();
+  if (txt === '—' || txt === '') { showToast('Nothing to copy yet', 'error'); return; }
+  navigator.clipboard.writeText(txt + ' MT').then(() => {
+    const btn = el.closest('.result-display')?.querySelector('.copy-btn');
+    if (btn) { btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1500); }
+    showToast('Copied: ' + txt + ' MT', 'success');
+  }).catch(() => showToast('Copy failed', 'error'));
+}
+
+// ============ PRINT BOM ============
+function printBOM() {
+  if (bomItems.length === 0) { showToast('No items to print', 'error'); return; }
+  const total = bomItems.reduce((s, i) => s + (i.value || 0), 0);
+  const rows = bomItems.map((item, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${item.name}</strong></td>
+      <td>${item.detail}</td>
+      <td class="num">${(item.value * 1000).toFixed(3)}</td>
+      <td class="num"><strong>${fmt(item.value)}</strong></td>
+    </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Steel BOM — ${new Date().toLocaleDateString('en-IN')}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #222; margin: 24px; }
+    h2 { font-size: 18px; margin-bottom: 4px; }
+    .meta { color: #666; font-size: 11px; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #111; color: #fff; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; padding: 8px 10px; text-align: left; }
+    td { padding: 7px 10px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+    tr:nth-child(even) td { background: #f8f8f8; }
+    .num { text-align: right; font-family: monospace; white-space: nowrap; }
+    .total-row td { background: #fff0ee; border-top: 2px solid #de4435; font-weight: bold; }
+    @media print { body { margin: 0; } }
+  </style></head><body>
+  <h2>Steel Weight — Bill of Materials</h2>
+  <div class="meta">Generated: ${new Date().toLocaleString('en-IN')} &nbsp;|&nbsp; Items: ${bomItems.length} &nbsp;|&nbsp; Total: ${fmt(total)} MT</div>
+  <table>
+    <thead><tr><th>#</th><th>Material</th><th>Description</th><th style="text-align:right">Weight (kg)</th><th style="text-align:right">Weight (MT)</th></tr></thead>
+    <tbody>${rows}<tr class="total-row"><td colspan="3" style="text-align:right">GRAND TOTAL</td><td class="num">${(total*1000).toFixed(3)}</td><td class="num">${fmt(total)}</td></tr></tbody>
+  </table>
+  <script>window.onload=()=>{window.print();}<\/script></body></html>`;
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ============ INIT DROPDOWNS ============
+function initDropdowns() {
+  const agSize = document.getElementById('ag-size');
+  Object.keys(ANGLES).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s.replace('x', ' × '); agSize.appendChild(o); });
+  const flSize = document.getElementById('fl-size');
+  Object.keys(FLATS).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s + ' mm'; flSize.appendChild(o); });
+}
+
+function updateAngleTHK() {
+  const size = document.getElementById('ag-size').value;
+  const thkSel = document.getElementById('ag-thk');
+  thkSel.innerHTML = '<option value="">Select THK</option>';
+  document.getElementById('ag-wt-info').style.display = 'none';
+  if (!size) return;
+  Object.keys(ANGLES[size]).forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t + ' mm'; thkSel.appendChild(o); });
+}
+function updateAngleWt() {
+  const size = document.getElementById('ag-size').value, thk = document.getElementById('ag-thk').value;
+  const info = document.getElementById('ag-wt-info');
+  if (size && thk && ANGLES[size]?.[thk]) { document.getElementById('ag-wt-val').textContent = ANGLES[size][thk]; info.style.display = 'inline-flex'; }
+  else { info.style.display = 'none'; }
+}
+function updateFlatTHK() {
+  const size = document.getElementById('fl-size').value;
+  const thkSel = document.getElementById('fl-thk');
+  thkSel.innerHTML = '<option value="">Select THK</option>';
+  document.getElementById('fl-wt-info').style.display = 'none';
+  if (!size) return;
+  Object.keys(FLATS[size]).forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t + ' mm'; thkSel.appendChild(o); });
+}
+function updateFlatWt() {
+  const size = document.getElementById('fl-size').value, thk = document.getElementById('fl-thk').value;
+  const info = document.getElementById('fl-wt-info');
+  if (size && thk && FLATS[size]?.[thk]) { document.getElementById('fl-wt-val').textContent = FLATS[size][thk]; info.style.display = 'inline-flex'; }
+  else { info.style.display = 'none'; }
+}
+function updateChannelWt() {
+  const size = document.getElementById('ch-size').value;
+  if (size && CHANNELS[size]) { document.getElementById('ch-wt-val').textContent = CHANNELS[size]; document.getElementById('ch-wt-info').style.display = 'inline-flex'; }
+  else { document.getElementById('ch-wt-info').style.display = 'none'; }
+}
+function updateBeamWt() {
+  const size = document.getElementById('bm-size').value;
+  if (size && BEAMS[size]) { document.getElementById('bm-wt-val').textContent = BEAMS[size]; document.getElementById('bm-wt-info').style.display = 'inline-flex'; }
+  else { document.getElementById('bm-wt-info').style.display = 'none'; }
+}
+
+// ============ CALCULATORS ============
+function fmt(n) { return n.toFixed(6).replace(/0+$/, '').replace(/\.$/, ''); }
+
+// Animated result counter
+const _rafIds = {};
+function setResult(id, val) {
+  const el = document.getElementById(id);
+  if (_rafIds[id]) { cancelAnimationFrame(_rafIds[id]); delete _rafIds[id]; }
+  if (val === null) { el.innerHTML = '—<span class="result-unit">MT</span>'; return; }
+  const start = performance.now(), dur = 420;
+  const step = now => {
+    const t = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.innerHTML = fmt(val * ease) + '<span class="result-unit"> MT</span>';
+    if (t < 1) _rafIds[id] = requestAnimationFrame(step);
+    else { el.innerHTML = fmt(val) + '<span class="result-unit"> MT</span>'; }
+  };
+  _rafIds[id] = requestAnimationFrame(step);
+}
+
+function calcPlates()  { const t=parseFloat(document.getElementById('pl-thk').value),w=parseFloat(document.getElementById('pl-wid').value),l=parseFloat(document.getElementById('pl-len').value),n=parseFloat(document.getElementById('pl-nos').value); if(isNaN(t)||isNaN(w)||isNaN(l)||isNaN(n)){setResult('pl-result',null);return;} setResult('pl-result',t*w*l*n*7.85/1e9); }
+function calcChannels(){ const s=document.getElementById('ch-size').value,l=parseFloat(document.getElementById('ch-len').value),n=parseFloat(document.getElementById('ch-nos').value); if(!s||isNaN(l)||isNaN(n)){setResult('ch-result',null);return;} setResult('ch-result',CHANNELS[s]*l*n/1000); }
+function calcBeams()   { const s=document.getElementById('bm-size').value,l=parseFloat(document.getElementById('bm-len').value),n=parseFloat(document.getElementById('bm-nos').value); if(!s||isNaN(l)||isNaN(n)){setResult('bm-result',null);return;} setResult('bm-result',BEAMS[s]*l*n/1000); }
+function calcPurlin()  { const l=parseFloat(document.getElementById('pu-len').value),n=parseFloat(document.getElementById('pu-nos').value); if(isNaN(l)||isNaN(n)){setResult('pu-result',null);return;} setResult('pu-result',l*5.5*n/1000); }
+function calcRoofing() { const t=document.getElementById('rf-type').value,l=parseFloat(document.getElementById('rf-len').value),n=parseFloat(document.getElementById('rf-nos').value); if(!t||isNaN(l)||isNaN(n)){setResult('rf-result',null);return;} setResult('rf-result',(t==='cc'?4.5:4.35)*l*n/1000); }
+function calcAngles()  { const s=document.getElementById('ag-size').value,t=document.getElementById('ag-thk').value,l=parseFloat(document.getElementById('ag-len').value),n=parseFloat(document.getElementById('ag-nos').value); if(!s||!t||isNaN(l)||isNaN(n)){setResult('ag-result',null);return;} const w=ANGLES[s]?.[t]; if(!w){setResult('ag-result',null);return;} setResult('ag-result',w*l*n/1000); }
+function calcFlats()   { const s=document.getElementById('fl-size').value,t=document.getElementById('fl-thk').value,l=parseFloat(document.getElementById('fl-len').value),n=parseFloat(document.getElementById('fl-nos').value); if(!s||!t||isNaN(l)||isNaN(n)){setResult('fl-result',null);return;} const w=FLATS[s]?.[t]; if(!w){setResult('fl-result',null);return;} setResult('fl-result',w*l*n/1000); }
+function calcDecking() { const t=parseFloat(document.getElementById('dk-thk').value),l=parseFloat(document.getElementById('dk-len').value),n=parseFloat(document.getElementById('dk-nos').value); if(isNaN(t)||isNaN(l)||isNaN(n)){setResult('dk-result',null);return;} const f=DECKING[t]; if(!f){setResult('dk-result',null);return;} setResult('dk-result',f*l*n/1000); }
+
+// ── HSS TYPE SWITCHER ──
+let currentHSType = 'chs';
+const PIPE_DIAGS = {
+  chs: `<circle cx="26" cy="26" r="18"/><circle cx="26" cy="26" r="11"/>`,
+  shs: `<rect x="8" y="8" width="36" height="36" rx="2"/><rect x="15" y="15" width="22" height="22" rx="1"/>`,
+  rhs: `<rect x="5" y="12" width="42" height="28" rx="2"/><rect x="12" y="18" width="28" height="16" rx="1"/>`
+};
+function setHSType(type) {
+  currentHSType = type;
+  ['chs','shs','rhs'].forEach(t => {
+    document.getElementById('hs-'+t+'-section').style.display = t===type ? 'block' : 'none';
+    const btn = document.getElementById('hs-'+t);
+    btn.style.background = t===type ? 'var(--accent)' : 'transparent';
+    btn.style.color = t===type ? '#fff' : 'var(--muted)';
+  });
+  document.getElementById('pipes-diag').innerHTML = PIPE_DIAGS[type];
+  setResult('pi-result', null);
+}
+function setPipeMode(mode) {
+  const odInput=document.getElementById('pi-od'), nbRow=document.getElementById('pi-nb-row');
+  const btnNB=document.getElementById('pi-mode-nb'), btnOD=document.getElementById('pi-mode-od');
+  if (mode==='nb') {
+    nbRow.style.display='grid'; odInput.readOnly=true; odInput.style.opacity='0.5'; odInput.style.cursor='not-allowed';
+    btnNB.style.background='var(--accent)'; btnNB.style.color='#fff'; btnOD.style.background='transparent'; btnOD.style.color='var(--muted)';
+  } else {
+    nbRow.style.display='none'; odInput.readOnly=false; odInput.style.opacity='1'; odInput.style.cursor='auto'; odInput.value=''; document.getElementById('pi-nb').value='';
+    btnOD.style.background='var(--accent)'; btnOD.style.color='#fff'; btnNB.style.background='transparent'; btnNB.style.color='var(--muted)';
+    setResult('pi-result',null); document.getElementById('pi-wt-info').style.display='none';
+  }
+}
+function applyNB() { const nb=document.getElementById('pi-nb').value; document.getElementById('pi-od').value = (nb && NB_OD[nb]) ? NB_OD[nb] : ''; }
+function calcPipes() {
+  const od=parseFloat(document.getElementById('pi-od').value), wt=parseFloat(document.getElementById('pi-wt').value), len=parseFloat(document.getElementById('pi-len').value), nos=parseFloat(document.getElementById('pi-nos').value);
+  const info=document.getElementById('pi-wt-info');
+  if(isNaN(od)||isNaN(wt)||wt>=od/2){setResult('pi-result',null);info.style.display='none';return;}
+  const wtpm=(od-wt)*wt*0.02466; document.getElementById('pi-wt-val').textContent=wtpm.toFixed(4); info.style.display='inline-flex';
+  if(isNaN(len)||isNaN(nos)){setResult('pi-result',null);return;} setResult('pi-result',wtpm*len*nos/1000);
+}
+function calcSHS() {
+  const side=parseFloat(document.getElementById('shs-side').value), thk=parseFloat(document.getElementById('shs-thk').value), len=parseFloat(document.getElementById('shs-len').value), nos=parseFloat(document.getElementById('shs-nos').value);
+  const info=document.getElementById('shs-wt-info');
+  if(isNaN(side)||isNaN(thk)||thk<=0||thk>=side/2){setResult('pi-result',null);info.style.display='none';return;}
+  const wtpm=4*thk*(side-thk)*7.85/1000; document.getElementById('shs-wt-val').textContent=wtpm.toFixed(4); info.style.display='inline-flex';
+  if(isNaN(len)||isNaN(nos)){setResult('pi-result',null);return;} setResult('pi-result',wtpm*len*nos/1000);
+}
+function calcRHS() {
+  const wid=parseFloat(document.getElementById('rhs-wid').value), hgt=parseFloat(document.getElementById('rhs-hgt').value), thk=parseFloat(document.getElementById('rhs-thk').value), len=parseFloat(document.getElementById('rhs-len').value), nos=parseFloat(document.getElementById('rhs-nos').value);
+  const info=document.getElementById('rhs-wt-info');
+  if(isNaN(wid)||isNaN(hgt)||isNaN(thk)||thk<=0||thk>=wid/2||thk>=hgt/2){setResult('pi-result',null);info.style.display='none';return;}
+  const wtpm=2*thk*(wid+hgt-2*thk)*7.85/1000; document.getElementById('rhs-wt-val').textContent=wtpm.toFixed(4); info.style.display='inline-flex';
+  if(isNaN(len)||isNaN(nos)){setResult('pi-result',null);return;} setResult('pi-result',wtpm*len*nos/1000);
+}
+
+// ============ TAB SWITCHING ============
+function switchTab(id, btn) {
+  document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ============ BOM ============
+let bomItems = [];
+function getResultValue(id) {
+  const el = document.getElementById(id); if (!el) return null;
+  const txt = el.textContent.replace('MT','').trim();
+  if (txt === '—' || txt === '') return null;
+  return parseFloat(txt);
+}
+
+function getBOMEntry(section) {
+  let name='', detail='', value=null, fields={};
+  switch(section) {
+    case 'plates': {
+      const thk=document.getElementById('pl-thk').value, wid=document.getElementById('pl-wid').value, len=document.getElementById('pl-len').value, nos=document.getElementById('pl-nos').value;
+      value=getResultValue('pl-result'); name='MS Plate'; detail=`${thk}×${wid}×${len}mm | Nos: ${nos}`;
+      fields={spec:'-',thk,widthMM:wid,heightMM:len,lenMtr:'-',nos,wtPerMtr:'-'}; break;
+    }
+    case 'channels': {
+      const sizeEl=document.getElementById('ch-size'), sizeKey=sizeEl.value, sizeText=sizeEl.options[sizeEl.selectedIndex].text, len=document.getElementById('ch-len').value, nos=document.getElementById('ch-nos').value;
+      value=getResultValue('ch-result'); name='MS Channel'; detail=`${sizeText} | ${len}Mtr | Nos: ${nos}`;
+      fields={spec:sizeText,thk:'-',widthMM:'-',heightMM:'-',lenMtr:len,nos,wtPerMtr:sizeKey?CHANNELS[sizeKey]:'-'}; break;
+    }
+    case 'beams': {
+      const sizeEl=document.getElementById('bm-size'), sizeKey=sizeEl.value, sizeText=sizeEl.options[sizeEl.selectedIndex].text, len=document.getElementById('bm-len').value, nos=document.getElementById('bm-nos').value;
+      value=getResultValue('bm-result'); name='RS Joist / Beam'; detail=`${sizeText} | ${len}Mtr | Nos: ${nos}`;
+      fields={spec:sizeText,thk:'-',widthMM:'-',heightMM:'-',lenMtr:len,nos,wtPerMtr:sizeKey?BEAMS[sizeKey]:'-'}; break;
+    }
+    case 'purlin': {
+      const len=document.getElementById('pu-len').value, nos=document.getElementById('pu-nos').value;
+      value=getResultValue('pu-result'); name='Purlin'; detail=`${len}Mtr | Nos: ${nos}`;
+      fields={spec:'2mm×200×60×60×20',thk:2,widthMM:'-',heightMM:'-',lenMtr:len,nos,wtPerMtr:5.5}; break;
+    }
+    case 'roofing': {
+      const typeEl=document.getElementById('rf-type'), typeKey=typeEl.value, typeText=typeEl.options[typeEl.selectedIndex].text, len=document.getElementById('rf-len').value, nos=document.getElementById('rf-nos').value;
+      value=getResultValue('rf-result'); name='Roofing Sheet'; detail=`${typeText} | ${len}Mtr | Nos: ${nos}`;
+      fields={spec:typeText,thk:'-',widthMM:'-',heightMM:'-',lenMtr:len,nos,wtPerMtr:typeKey==='cc'?4.5:4.35}; break;
+    }
+    case 'angles': {
+      const size=document.getElementById('ag-size').value, thk=document.getElementById('ag-thk').value, len=document.getElementById('ag-len').value, nos=document.getElementById('ag-nos').value;
+      value=getResultValue('ag-result'); name='MS Angle'; detail=`${size}mm × ${thk}mm THK | ${len}Mtr | Nos: ${nos}`;
+      const agWt=(size&&thk&&ANGLES[size])?(ANGLES[size][thk]||'-'):'-';
+      fields={spec:size?size+'mm':'-',thk,widthMM:'-',heightMM:'-',lenMtr:len,nos,wtPerMtr:agWt}; break;
+    }
+    case 'flats': {
+      const size=document.getElementById('fl-size').value, thk=document.getElementById('fl-thk').value, len=document.getElementById('fl-len').value, nos=document.getElementById('fl-nos').value;
+      value=getResultValue('fl-result'); name='MS Flat'; detail=`${size}mm × ${thk}mm THK | ${len}Mtr | Nos: ${nos}`;
+      const flWt=(size&&thk&&FLATS[size])?(FLATS[size][thk]||'-'):'-';
+      fields={spec:size?size+'mm':'-',thk,widthMM:'-',heightMM:'-',lenMtr:len,nos,wtPerMtr:flWt}; break;
+    }
+    case 'decking': {
+      const thk=document.getElementById('dk-thk').value, len=document.getElementById('dk-len').value, nos=document.getElementById('dk-nos').value;
+      value=getResultValue('dk-result'); name='Decking Sheet'; detail=`${thk}mm THK | ${len}Mtr | Nos: ${nos}`;
+      fields={spec:'Floor Decking',thk,widthMM:'-',heightMM:'-',lenMtr:len,nos,wtPerMtr:DECKING[parseFloat(thk)]||'-'}; break;
+    }
+    case 'pipes': {
+      const hsType=currentHSType||'chs';
+      if (hsType==='chs') {
+        const od=document.getElementById('pi-od').value, wt=document.getElementById('pi-wt').value, len=document.getElementById('pi-len').value, nos=document.getElementById('pi-nos').value, nb=document.getElementById('pi-nb').value;
+        value=getResultValue('pi-result'); name='CHS (Circular Hollow)';
+        detail=nb?`NB ${nb} (OD ${od}mm) | WT: ${wt}mm | ${len}Mtr | Nos: ${nos}`:`OD: ${od}mm | WT: ${wt}mm | ${len}Mtr | Nos: ${nos}`;
+        const od_f=parseFloat(od), wt_f=parseFloat(wt);
+        const chsWtpm=(!isNaN(od_f)&&!isNaN(wt_f))?+(Math.PI*(od_f-wt_f)*wt_f*7.85/1000).toFixed(4):'-';
+        fields={spec:nb?`NB ${nb} / OD ${od}mm`:`OD ${od}mm`,thk:wt,widthMM:od,heightMM:'-',lenMtr:len,nos,wtPerMtr:chsWtpm};
+      } else if (hsType==='shs') {
+        const side=document.getElementById('shs-side').value, thk=document.getElementById('shs-thk').value, len=document.getElementById('shs-len').value, nos=document.getElementById('shs-nos').value;
+        value=getResultValue('pi-result'); name='SHS (Square Hollow)'; detail=`${side}×${side}mm | THK: ${thk}mm | ${len}Mtr | Nos: ${nos}`;
+        const s=parseFloat(side), t=parseFloat(thk);
+        const shsWtpm=(!isNaN(s)&&!isNaN(t))?+(4*t*(s-t)*7.85/1000).toFixed(4):'-';
+        fields={spec:side+'×'+side+'mm',thk,widthMM:side,heightMM:'-',lenMtr:len,nos,wtPerMtr:shsWtpm};
+      } else {
+        const wid=document.getElementById('rhs-wid').value, hgt=document.getElementById('rhs-hgt').value, thk=document.getElementById('rhs-thk').value, len=document.getElementById('rhs-len').value, nos=document.getElementById('rhs-nos').value;
+        value=getResultValue('pi-result'); name='RHS (Rectangular Hollow)'; detail=`${wid}×${hgt}mm | THK: ${thk}mm | ${len}Mtr | Nos: ${nos}`;
+        const w=parseFloat(wid), h=parseFloat(hgt), t=parseFloat(thk);
+        const rhsWtpm=(!isNaN(w)&&!isNaN(h)&&!isNaN(t))?+(2*t*(w+h-2*t)*7.85/1000).toFixed(4):'-';
+        fields={spec:wid+'×'+hgt+'mm',thk,widthMM:wid,heightMM:hgt,lenMtr:len,nos,wtPerMtr:rhsWtpm};
+      }
+      break;
+    }
+  }
+  return { name, detail, value, fields };
+}
+
+function addToBOM(section) {
+  const entry = getBOMEntry(section);
+  if (!entry.value) { showToast('Fill all fields first', 'error'); return; }
+  bomItems.push({ id: Date.now(), ...entry });
+  renderBOM();
+  showToast(entry.name + ' added to BOM', 'success');
+}
+
+function renderBOM() {
+  const list=document.getElementById('bom-list'), count=document.getElementById('bom-count');
+  count.textContent=bomItems.length;
+  const html=bomItems.length===0
+    ?'<div class="bom-empty">No items added yet.<br>Calculate and add items above.</div>'
+    :bomItems.map(item=>`
+      <div class="bom-item">
+        <div><div class="bom-item-name">${item.name}</div><div class="bom-item-detail">${item.detail}</div></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="bom-item-qty">${fmt(item.value)} MT</div>
+          <button class="bom-item-remove" onclick="removeBOM(${item.id})">✕</button>
+        </div>
+      </div>`).join('');
+  const total=bomItems.reduce((s,i)=>s+i.value,0);
+  const totalStr=bomItems.length?fmt(total)+' MT':'0.000 MT';
+  list.innerHTML=html;
+  document.getElementById('bom-grand').textContent=totalStr;
+  const dl=document.getElementById('bom-list-drawer'); if(dl) dl.innerHTML=html.replace('No items added yet.<br>Calculate and add items above.','No items yet.');
+  const dg=document.getElementById('bom-grand-drawer'); if(dg) dg.textContent=totalStr;
+  const dc=document.getElementById('bom-count-drawer'); if(dc) dc.textContent=bomItems.length;
+  const fab=document.getElementById('fab-count'); if(fab) fab.textContent=bomItems.length;
+}
+
+function removeBOM(id) { bomItems=bomItems.filter(i=>i.id!==id); renderBOM(); showToast('Item removed','info'); }
+function clearBOM() {
+  if (bomItems.length===0) return;
+  if (confirm('Clear all BOM items?')) { bomItems=[]; renderBOM(); showToast('BOM cleared','info'); }
+}
+
+function exportBOM() {
+  if (bomItems.length===0) { showToast('No items to export','error'); return; }
+  const headers=['#','Material','Size / Spec','THK (mm)','Width (mm)','Height (mm)','Length (mtr)','Nos','Wt/Mtr (kg)','Weight (kg)','Weight (MT)'];
+  const escape=v=>{ const s=String(v??'-'); return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s; };
+  let csv=headers.join(',')+'\n';
+  bomItems.forEach((item,i)=>{
+    const f=item.fields||{}, wMT=item.value, wKG=wMT!=null?+(wMT*1000).toFixed(3):'-';
+    csv+=[i+1,item.name,f.spec??'-',f.thk??'-',f.widthMM??'-',f.heightMM??'-',f.lenMtr??'-',f.nos??'-',f.wtPerMtr??'-',wKG,wMT!=null?fmt(wMT):'-'].map(escape).join(',')+'\n';
+  });
+  const total=bomItems.reduce((s,i)=>s+(i.value||0),0);
+  csv+=['','','','','','','','','GRAND TOTAL',+(total*1000).toFixed(3),fmt(total)].map(escape).join(',')+'\n';
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='steel_bom_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('CSV exported','success');
+}
+
+// ============ CLEAR SECTION ============
+const SECTION_FIELDS={plates:['pl-thk','pl-wid','pl-len','pl-nos'],channels:['ch-size','ch-len','ch-nos'],beams:['bm-size','bm-len','bm-nos'],purlin:['pu-len','pu-nos'],roofing:['rf-type','rf-len','rf-nos'],angles:['ag-size','ag-thk','ag-len','ag-nos'],flats:['fl-size','fl-thk','fl-len','fl-nos'],decking:['dk-thk','dk-len','dk-nos'],pipes:['pi-nb','pi-od','pi-wt','pi-len','pi-nos','shs-side','shs-thk','shs-len','shs-nos','rhs-wid','rhs-hgt','rhs-thk','rhs-len','rhs-nos']};
+const RESULT_IDS={plates:'pl-result',channels:'ch-result',beams:'bm-result',purlin:'pu-result',roofing:'rf-result',angles:'ag-result',flats:'fl-result',decking:'dk-result',pipes:'pi-result'};
+const WT_INFO_IDS={channels:'ch-wt-info',beams:'bm-wt-info',angles:'ag-wt-info',flats:'fl-wt-info',pipes:'pi-wt-info'};
+
+function clearSection(section) {
+  (SECTION_FIELDS[section]||[]).forEach(id=>{const el=document.getElementById(id);if(!el)return;el.value='';});
+  if(section==='angles'){document.getElementById('ag-thk').innerHTML='<option value="">Select THK</option>';}
+  if(section==='flats'){document.getElementById('fl-thk').innerHTML='<option value="">Select THK</option>';}
+  if(section==='pipes'){
+    document.getElementById('pi-od').readOnly=true; document.getElementById('pi-od').style.opacity='0.5';
+    ['shs-side','shs-thk','shs-len','shs-nos','rhs-wid','rhs-hgt','rhs-thk','rhs-len','rhs-nos'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['shs-wt-info','rhs-wt-info'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  }
+  const wi=WT_INFO_IDS[section]; if(wi){const el=document.getElementById(wi);if(el)el.style.display='none';}
+  setResult(RESULT_IDS[section],null);
+}
+
+// ============ MOBILE DRAWER ============
+function openBOMDrawer(){document.getElementById('bom-overlay').classList.add('open');document.getElementById('bom-drawer').classList.add('open');}
+function closeBOMDrawer(){document.getElementById('bom-overlay').classList.remove('open');document.getElementById('bom-drawer').classList.remove('open');}
+
+// ============ INIT ============
+initDropdowns();
+</script>
+</body>
+</html>
